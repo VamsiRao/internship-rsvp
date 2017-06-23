@@ -20,16 +20,31 @@
 		if(is_ajax()){
 					
 			
-				if(isset($_POST['rsvpName']) && !empty($_POST['rsvpName'])){
+				if(isset($_POST['requestName']) && !empty($_POST['requestName'])){
 				
-				$attr['rsvpName']  = $_POST['rsvpName'];
-				$attr['rsvpEmail']= $_POST['rsvpEmail'];
-				$attr['rsvpPref']=$_POST['inlineRadioOptions'];
+				$attr['requestName']  = $_POST['requestName'];
+				$attr['requestEmail']= $_POST['requestEmail'];
+				$attr['requestPref']=$_POST['inlineRadioOptions'];
 
 				echo insertDataRSVP($attr,$connect);
 				return;
 				
 			}
+
+
+				if(isset($_POST['rsvpEmail']) && !empty($_POST['rsvpEmail'])){
+				
+				
+				$attr['rsvpEmail']= $_POST['rsvpEmail'];
+				
+
+				echo insertDataRSVP($attr,$connect);
+				return;
+				
+			}
+
+
+
 
 				if(isset($_POST['guestName'])&&!empty($_POST['guestName'])){
 					
@@ -37,8 +52,8 @@
 				$arr['guestName']=$_POST['guestName'];
 				$arr['guestEmail']=$_POST['guestEmail'];
 
-				insertDataGuest($arr,$connect);	
-				return retrieveJSON($connect);
+				echo insertDataGuest($arr,$connect);	
+				return;
 				
 				
 
@@ -48,17 +63,30 @@
 		}
 
 
+		function retrieveEventDataTable($connect){
+		$retrieve="SELECT * FROM event ORDER BY event_id DESC LIMIT 10";
+
+		$b= mysqli_query($connect,$retrieve) or die(mysqli_error());
+
+		if (!$b){
+			die('invalid query');
+
+		}
+		$events=mysqli_fetch_all($b,MYSQLI_ASSOC);
+		
+			return ($events);
+		
+		
+		}
+
 		function retrieveDataEvent($connect){
 		$retrieve="SELECT * FROM event ORDER BY event_id DESC LIMIT 1";
-
 		$b= mysqli_query($connect,$retrieve) or die(mysqli_error());
 		
 		
 		if (!$b){
 			die('invalid query');
-
 		}
-
 		while ($row= mysqli_fetch_assoc($b)) {
 			echo"<h1 id='banner_name' style='text-align: center;'>{$row['name']}</h1><br>".
 				"<h1 id='banner_theme' style='text-align: center;'>{$row['theme']}</h1><br>".
@@ -67,6 +95,7 @@
 				//"<a href='db.php' target='_blank'>Complete DB</a>";
 		}
 		}
+		
 
 
 		function is_ajax(){
@@ -177,6 +206,13 @@
 			$insert ="INSERT INTO `guest` (`name`, `email`) VALUES ('".$arr['guestName']."','".$arr['guestEmail']."');";
 
 			$a = mysqli_query($connect, $insert) or die(mysql_error());
+
+			$retrieve="SELECT * FROM guest ORDER BY guest_id DESC LIMIT 1";
+
+			$b= mysqli_query($connect,$retrieve) or die(mysqli_error($connect));
+			
+			$a =mysqli_fetch_assoc($b);
+			return json_encode($a);
 		}
 
 
@@ -191,11 +227,11 @@
 			
 			$guests=mysqli_fetch_all($g,MYSQLI_ASSOC);
 		
-			return $guests;
+			return ($guests);
 		}
 
 
-		function retrieveData($connect){
+		/*function retrieveData($connect){
 		$retrieve="SELECT * FROM event ORDER BY event_id DESC LIMIT 1";
 
 		$b= mysqli_query($connect,$retrieve) or die(mysqli_error($connect));
@@ -214,7 +250,7 @@
 				"<a href='db.php' target='_blank'>Complete DB</a>";
 		}
 		}
-
+*/
 
 
 		
