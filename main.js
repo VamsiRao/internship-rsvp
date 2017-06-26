@@ -1,4 +1,4 @@
-<script type="text/javascript">
+
 
 
 		function validateFormRSVP(){  
@@ -251,6 +251,130 @@
 		}
 
 
+			function sendConfirmData(object){
+  			
+  			var email= object.value;
+  			
+
+  			
+			$.ajax({
+
+				url:'guest.php',
+				data:'confirmEmail='+ email,
+				cache: false,
+				processData: false,
+				dataType:'JSON',
+				type:'POST',
+				success: function (e){
+
+					ajaxGuestConfirmTable();
+					ajaxGuestPendingTable();
+					alert("Confirmed");
+					
+								
+					
+				}
+				
+
+			});
+
+		}
+		function ajaxGuestConfirmTable(){
+  			
+  			  			
+
+  			
+			$.ajax({
+
+				url:'guest.php',
+				data: { 'action':'confirmTable' },
+				dataType:'JSON',
+				type:'POST',
+				success: function (e){
+					 var guests=e;
+					//console.log(guests.length);
+					constructGuestConfirmTable(guests);
+								
+					
+				}
+				
+
+			});
+
+		}
+		function ajaxGuestPendingTable(){
+  			
+  			  			
+
+  			
+			$.ajax({
+
+				url:'guest.php',
+				data: { 'action':'pendingTable' },
+				dataType:'JSON',
+				type:'POST',
+				success: function (e){
+					 var guests=e;
+					//console.log(guests.length);
+					constructGuestPendingTable(guests);
+								
+					
+				}
+				
+
+			});
+
+		}
+
+
+		function constructGuestConfirmTable(guests){
+			var html='';
+			var length= guests.length;
+			for(var i=0; i<length;i++){
+				var guest=guests[i];
+				console.log(guest['name']);
+				var row_html='<tr>';
+				row_html+='<td>'+guest['name']+ '</td>';
+				row_html+='<td>'+guest['email']+ '</td>';
+				row_html+='<td>'+guest['status']+ '</td>';
+				row_html+='</tr>';
+
+				html+=row_html;
+
+		}
+		
+		$('#guest_confirm_table tbody').html(html);
+			
+
+
+		}
+
+
+	function constructGuestPendingTable(guests){
+			var html='';
+			var length= guests.length;
+			for(var i=0; i<length;i++){
+				var guest=guests[i];
+				console.log(guest['name']);
+				var row_html='<tr>';
+				row_html+='<td>'+guest['name']+ '</td>';
+				row_html+='<td>'+guest['email']+ '</td>';
+				row_html+='<td>'+guest['status']+ '</td>';
+				row_html+="<td><button type='button' class='btn btn-success btn-xs' value='"+guest['email']+"' onclick='sendConfirmData(this);'>Confirm</button></td>";
+				row_html+='</tr>';
+
+				html+=row_html;
+
+
+
+		}
+		
+		$('#guest_pending_table tbody').html(html);
+			
+
+
+		}
+
 
 	/*	$(document).ready(function(){
 			$('#show_new_event').click(function(){
@@ -266,4 +390,3 @@
 			
 		});
 */
-	</script>

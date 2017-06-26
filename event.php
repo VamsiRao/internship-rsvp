@@ -12,8 +12,8 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="main.js"></script>
 
-<?php include 'main.js' ?>
 <div class="container">
 	<div class="row">
 			
@@ -39,7 +39,7 @@
 				      
 				     
 				      	<?php
-			      				
+			      					
 					      			$events= retrieveEventDataTable($connect);
 
 					      			foreach ($events as $event) {
@@ -47,11 +47,10 @@
 					      	 				echo"<tr><td>{$event['name']}</td>".
 					      	 					"<td>{$event['theme']}</td>".
 					      	 					"<td>{$event['date']}</td>".
-					      	 					"<td>{$event['venue']}</td></tr>";
-					      	 								      	 					
+					      	 					"<td>{$event['venue']}</td></tr>";		      	 								      	 					
 					      					
 					      				}
-				      		//	}
+				      		
 			      		      		
 				      	?>
 				    

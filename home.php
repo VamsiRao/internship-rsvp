@@ -17,7 +17,7 @@
 <body>
 	
 
-<?php include 'main.js' ?>
+<script src="main.js"></script>
 
 <div class="container"  id='home_container'>
 	<div class="row">

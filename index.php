@@ -2,71 +2,44 @@
 
  <?php
   	
-  
   	if(isset($_POST['eventName'])){
   		
   		include 'functions.php'; 
   	}
 
-  	
-
-
-	
-	
-  	include 'guest.php';
-
-
-  	
+  	include_once 'guest.php';
   ?>  
   	
 <html>
 <head>
-	<!-- <meta char  set="utf-8"> -->
-	<title>Guests</title>
-	<!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
+	<title>Guests</title>
+	
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+ <script src="main.js"></script>
 
-	<?php include 'main.js'	?>
 </head>
-
-
-
 
 <body>
 
-	<?php include ('navbar.php'); ?>
+	<?php include 'navbar.php'; ?>
 		
 
-<!-- 	<?php //include('home.php'); ?> -->
-	<!-- <div class="container">
-		<div class="row">
-			<div class="col-xs-12">
-				
-			</div>
-		</div>
-	</div> -->
 
-
-	<div class="container" id="new_event_container" >
+	<div class="container" id="guest_management_container" >
 			<div class="row">
 
 			<h1>
-			<span>Guest Details</span>
-			<button class="btn btn-primary pull-right" type="button" data-toggle="modal" data-target="#guestModal">Add Guest</button>
+				<span>Guest Management</span>
+				<button class="btn btn-primary pull-right" type="button" data-toggle="modal" data-target="#guestModal">Add Guest</button>
 			</h1>
 			<hr>
-			
 				
-		
-			
-				
-					<div class="col-xs-12 col-md-6 col-md-offset-3">
-				<table class="table table-hover" id="guest_table" name="guest_table">
+				<div class="col-xs-12 col-md-4 col-md-offset-1 ">
+				<table class="table table-hover" id="guest_confirm_table" name="guest_table">
  					<thead>
 				      <tr>
 				         <th>Name</th>
@@ -79,26 +52,58 @@
 				   <tbody>
 				      
 				     
-				      	<?php
+				      	<?php		      					
 			      					
-			      					//constructTable($connect);
-
-				      				//function constructTable($connect){
-
-					      			$guests= retrieveEventGuestDataTable($connect);
+				      				$guests= retrieveEventGuestDataTableConfirm($connect);				      			
 
 					      			foreach ($guests as $guest) {
 					      	
 					      	 				echo"<tr><td>{$guest['name']}</td>".
 					      	 					"<td>{$guest['email']}</td>".
-					      	 					"<td>{$guest['status']}</td></tr>";
-					      	 				//	"<td>{$guest['status']}</td></tr>";
+					      	 					"<td>{$guest['status']}</td></tr>";					      					
+					      				}
+				      						      		      		
+				      	?>
+				    
+				     
+				   </tbody>
+					
+ 				</table>
+			</div>
+
+
+
+					<div class="col-xs-12 col-md-5 col-md-offset-1 ">
+				<table class="table table-hover" id="guest_pending_table" name="guest_table">
+ 					<thead>
+				      <tr>
+				         <th>Name</th>
+				         <th>Email</th>
+				         <th>Status</th>
+				         <th>Action</th>
+				         
+				      </tr>
+				   </thead>
+				   
+				   <tbody>
+				      
+				     
+				      	<?php
+			      					
+			      					
+					      			$guests= retrieveEventGuestDataTablePending($connect);
+
+					      			foreach ($guests as $guest) {
+					      	
+					      	 				echo"<tr><td>{$guest['name']}</td>".
+					      	 					"<td>{$guest['email']}</td>".
+					      	 					"<td>{$guest['status']}</td>".
+					      	 					"<td><button type='button' class='btn btn-success btn-xs' value='{$guest['email']}' onclick='sendConfirmData(this);'>Confirm</button></td></tr>";
 
 
 					      	 					
 					      					
 					      				}
-				      		//	}
 			      		      		
 				      	?>
 				    
@@ -107,6 +112,10 @@
 					
  				</table>
 			</div>
+			
+
+
+
 			</div>
 
 
