@@ -1,17 +1,18 @@
 
 
 
-		function validateFormRSVP(){  
+		function validateFormEmail(){  
 
-								var rsvpForm=$('#rsvp_form');
+								var emailForm=$('#email_form');
 								
-								if(!rsvpForm[0].checkValidity()){
-									rsvpForm[0].reportValidity();
+								if(!emailForm[0].checkValidity()){
+									emailForm[0].reportValidity();
 									return;	}
 							//	$('#reuest_form').validator();
 								 else {
-										newRSVP();
-										$('#rsvpModal').modal('toggle');
+										newLink();
+										
+										
 									}
 
 								}  
@@ -80,25 +81,19 @@
 
 			$.ajax({
 
-				url:'functions.php',
+				url:'guest.php',
 				data:$.param(data),
 				cache: false,
 				processData: false,
 				dataType:'JSON',
 				type:'POST',
 				success: function (e){
-
+					
+					var events=e;
+					$('#eventModal').modal('toggle');
 					$('#event_form').trigger("reset");
 
-					$('#event_display').empty();
-					$('#banner_name').html(e.name);
-					$('#banner_theme').html(e.theme);
-					$('#banner_date').html(e.date);
-					$('#banner_venue').html(e.venue);
-					alert("New event created");
-					//Delete all elements of the table
-					$('#guest_table tbody').empty();
-								
+					constructEventTable(events);
 					
 				}
 				
@@ -106,6 +101,59 @@
 			});
 
 		}
+		function newLink(){
+				
+
+			
+				
+					var data = $('form[name="email_form"]').serializeArray();
+
+					$.ajax({
+
+						url:'guest.php',
+						data:$.param(data),
+						cache: false,
+						processData: false,
+						dataType:'JSON',
+						type:'POST',
+						success: function (e){
+
+							console.log(e);
+							 if(e.register==="register") {
+								
+								alert("Please request an invite first");
+								$('#email_form').trigger("reset");	
+							
+							} else if(e.register==="registered"){
+
+								alert("You have already registered");
+								$('#email_form').trigger("reset");
+								$('#emailModal').modal('toggle');
+
+							}else {
+								var url =e.url;
+								$('#tokenDiv').html(url);
+								
+								$('#email_form').trigger("reset");
+								$('#emailModal').modal('toggle');
+								$('#linkModal').modal('toggle');
+							}
+																
+								
+										
+										
+
+							
+							
+						}
+						
+
+					});
+				}
+
+				
+
+
 
 		function newRSVP(){
 				
@@ -125,11 +173,14 @@
 						success: function (e){
 
 							console.log(e);
-							if(e.register==null)
+							if(e.register=="registered")
 								{
 										$('#rsvp_form').trigger("reset");
 										alert("You have already registered");
 								}
+								else if(e.register==="register") {
+							alert("Please request an invite first");
+													}
 								else{
 
 										if(e.status==="pending"){
@@ -141,14 +192,7 @@
 										
 										
 										$('#rsvp_form').trigger("reset");	
-										$('#guest_table').prepend([
-															'<tr>',
-															    '<td>'+e.name+'</td>',
-															    '<td>'+e.email+'</td>',
-															    '<td>'+e.status+'</td>',
-															    
-															'</tr>'
-															].join(''));
+										
 										
 
 							
@@ -179,12 +223,17 @@
 				type:'POST',
 				success: function (e){
 
+
 					console.log(e);
-					if(e.register==null)
+					if(e.register==="registered")
 						{
 								$('#request_form').trigger("reset");
 								alert("You have already registered");
+						}else if (e.register==="register") {
+							alert("Please request an invite first");
 						}
+
+
 						else{
 
 								if(e.status==="pending"){
@@ -196,16 +245,7 @@
 								
 								
 								$('#request_form').trigger("reset");	
-								$('#guest_table').prepend([
-													'<tr>',
-													    '<td>'+e.name+'</td>',
-													    '<td>'+e.email+'</td>',
-													    '<td>'+e.status+'</td>',
-													    
-													'</tr>'
-													].join(''));
 								
-
 					
 					}
 				}
@@ -230,7 +270,13 @@
 					//$(".return").html();						
 						$('#guest_form').trigger("reset");	
 						
-						alert("New guest has been added to the list");
+						if(e.entry==="entered"){
+							alert("Guest is already in the guest list");
+						}
+						else{
+							alert("Guest "+e.name+" is entered")
+
+						}
 							/*$('#guest_table').prepend([
 										'<tr>',
 										    '<td>'+e.name+'</td>',
@@ -239,6 +285,8 @@
 										    
 										'</tr>'
 										].join(''));
+						}
+						}
 		*/
 
 					
@@ -332,11 +380,11 @@
 			var length= guests.length;
 			for(var i=0; i<length;i++){
 				var guest=guests[i];
-				console.log(guest['name']);
+				
 				var row_html='<tr>';
 				row_html+='<td>'+guest['name']+ '</td>';
 				row_html+='<td>'+guest['email']+ '</td>';
-				row_html+='<td>'+guest['status']+ '</td>';
+				row_html+="<td><span class='label label-info'>"+guest['status']+ "</span></td>";
 				row_html+='</tr>';
 
 				html+=row_html;
@@ -355,11 +403,11 @@
 			var length= guests.length;
 			for(var i=0; i<length;i++){
 				var guest=guests[i];
-				console.log(guest['name']);
+				
 				var row_html='<tr>';
 				row_html+='<td>'+guest['name']+ '</td>';
 				row_html+='<td>'+guest['email']+ '</td>';
-				row_html+='<td>'+guest['status']+ '</td>';
+				row_html+="<td><span class='label label-warn'>"+guest['status']+ "</span></td>";
 				row_html+="<td><button type='button' class='btn btn-success btn-xs' value='"+guest['email']+"' onclick='sendConfirmData(this);'>Confirm</button></td>";
 				row_html+='</tr>';
 
@@ -373,6 +421,40 @@
 			
 
 
+		}
+
+
+	function constructEventTable(events){
+			var html='';
+			var length= events.length;
+			for(var i=0; i<length;i++){
+				var event=events[i];
+				
+				var row_html='<tr>';
+				row_html+='<td>'+event['name']+ '</td>';
+				row_html+='<td>'+event['theme']+ '</td>';
+				row_html+='<td>'+event['date']+ '</td>';
+				row_html+='<td>'+event['venue']+ '</td>';
+				row_html+='</tr>';
+
+				html+=row_html;
+
+
+
+		}
+		
+		$('#event_table tbody').html(html);
+			
+
+
+		}
+
+
+
+
+
+		function closeWindow(){
+			window.close();
 		}
 
 

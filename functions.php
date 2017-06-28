@@ -35,7 +35,7 @@
 
 
 		
-		function insertData ($attr,$connect){
+		function insertEventData ($attr,$connect){
 
 			
 		

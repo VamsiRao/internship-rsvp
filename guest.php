@@ -19,7 +19,11 @@
 
 		if(is_ajax()){
 			
+				
 
+
+				
+					
 
 				if(isset($_POST['action']) && !empty($_POST['action'])){
 				
@@ -54,6 +58,8 @@
 					
 			
 				if(isset($_POST['requestName']) && !empty($_POST['requestName'])){
+
+
 				
 				$attr['name']  = $_POST['requestName'];
 				$attr['email']= $_POST['requestEmail'];
@@ -70,22 +76,36 @@
 				
 				$attr['email']= $_POST['rsvpEmail'];
 				
-
-				echo insertDataRSVP($attr,$connect);
+				echo json_encode( generateToken($attr,$connect));
+				//echo insertDataRSVP($attr,$connect);
 				return;
 				
 			}
 
+
+			
+			if(isset($_POST['eventName'])&& !empty($_POST['eventName'])){
+
+				$attr['eventName']  = $_POST['eventName'];
+				$attr['eventTheme']= $_POST['eventTheme'];
+				$attr['date']=$_POST['date'];
+				$attr['eventVenue']=$_POST['eventVenue'];
+					
+				 insertEventData($attr,$connect);
+				 echo json_encode(retrieveEventDataTable($connect));
+
+
+			}
 
 
 
 				if(isset($_POST['guestName'])&&!empty($_POST['guestName'])){
 					
 
-				$arr['guestName']=$_POST['guestName'];
-				$arr['guestEmail']=$_POST['guestEmail'];
+				$arr['name']=$_POST['guestName'];
+				$arr['email']=$_POST['guestEmail'];
 
-				echo insertDataGuest($arr,$connect);	
+				echo json_encode( insertGuestData($arr,$connect));	
 				return;
 				
 				
@@ -94,6 +114,16 @@
 
 			
 		}
+
+		function insertEventData ($attr,$connect){
+
+			
+		
+			$insert ="INSERT INTO `event` (`name`, `theme`, `date`, `venue`) VALUES ('".$attr['eventName']."','".$attr['eventTheme']."','".$attr['date']."','".$attr['eventVenue']."');";
+
+		$a = mysqli_query($connect, $insert) or die(mysql_error());
+		}
+
 
 
 		function retrieveEventDataTable($connect){
@@ -121,10 +151,10 @@
 			die('invalid query');
 		}
 		while ($row= mysqli_fetch_assoc($b)) {
-			echo"<h1 id='banner_name' style='text-align: center;'>{$row['name']}</h1><br>".
-				"<h1 id='banner_theme' style='text-align: center;'>{$row['theme']}</h1><br>".
-				"<h1 id='banner_date' style='text-align: center;'>{$row['date']}</h1><br>".
-				"<h3 id='banner_venue' style='text-align: center;'>{$row['venue']}</h3> <br><br>";
+			echo"<h1 id='banner_name' style='text-align: center;'>Event: {$row['name']}</h1><br>".
+				"<h1 id='banner_theme' style='text-align: center;'>Theme: {$row['theme']}</h1><br>".
+				"<h1 id='banner_date' style='text-align: center;'><i class='fa fa-calendar-o' aria-hidden='true'></i> {$row['date']}</h1><br>".
+				"<h1 id='banner_venue' style='text-align: center;'><i class='fa fa-map-marker' aria-hidden='true'></i> {$row['venue']}</h3> <br><br>";
 				//"<a href='db.php' target='_blank'>Complete DB</a>";
 		}
 		}
@@ -164,9 +194,11 @@
 									
 									//$insert_guest=mysqli_fetch_assoc($b);
 									
-									addToEventGuest($connect,'0',$attr['name'],$event_id['event_id'],$attr['email'],'pending');
+									$a=addToEventGuest($connect,'0',$attr['name'],$event_id['event_id'],$attr['email'],'pending');
+									
 									
 									return retrieveJSON($connect);
+
 
 
 								}else{			
@@ -177,8 +209,8 @@
 								}
 
 						} else{
-								$return=null;
-								 $return["register"] = $return;
+								
+								 $return["register"] = "registered";
 							     return json_encode($return);
 						}		
 
@@ -190,7 +222,7 @@
 		}
 
 		function getLatestEvent($connect){
-			$query="SELECT event_id FROM event ORDER BY event_id DESC LIMIT 1";
+			$query="SELECT * FROM event ORDER BY event_id DESC LIMIT 1";
 						$event_id=mysqli_query($connect, $query) or die(mysql_error());
 						$event_id= mysqli_fetch_assoc($event_id);
 						return $event_id;
@@ -263,7 +295,7 @@
 								}
 
 						} else{
-								$return=null;
+								$return="registered";
 								 $return["register"] = $return;
 							     return json_encode($return);
 						}		
@@ -275,11 +307,12 @@
 			
 		}
 
-		function insertDataGuest($arr,$connect){
+		function insertGuestData($attr,$connect){
 
-			
+			$guest=checkGuestTable($attr,$connect);
+			if($guest['email']==NULL){
 		
-			$insert ="INSERT INTO `guest` (`name`, `email`) VALUES ('".$arr['guestName']."','".$arr['guestEmail']."');";
+			$insert ="INSERT INTO `guest` (`name`, `email`) VALUES ('".$attr['name']."','".$attr['email']."');";
 
 			$a = mysqli_query($connect, $insert) or die(mysql_error());
 
@@ -288,7 +321,13 @@
 			$b= mysqli_query($connect,$retrieve) or die(mysqli_error($connect));
 			
 			$a =mysqli_fetch_assoc($b);
-			return json_encode($a);
+			return $a;
+		}
+		
+		else {
+			$entry['entry']='entered';
+			return $entry; 
+		} 
 		}
 
 
@@ -297,7 +336,7 @@
 			
 			$event_id= getLatestEvent($connect);
 			
-			$retrieve="SELECT * FROM event_guest WHERE (`event_id`='".$event_id['event_id']."' AND `status`= 'pending' ) ORDER BY `event_guest_id` DESC LIMIT 10";
+			$retrieve="SELECT * FROM event_guest WHERE (`event_id`='".$event_id['event_id']."' AND `status`= 'pending' ) ORDER BY `event_guest_id` DESC ";
 			$g=mysqli_query($connect,$retrieve) or die(mysqli_error($connect));
 			
 			$guests=mysqli_fetch_all($g,MYSQLI_ASSOC);
@@ -311,7 +350,7 @@
 			$event_id=mysqli_query($connect, $event_id) or die(mysql_error());
 			$event_id= mysqli_fetch_assoc($event_id);
 			
-			$retrieve="SELECT * FROM event_guest WHERE (`event_id`='".$event_id['event_id']."' AND `status`= 'confirmed' ) ORDER BY `event_guest_id` DESC LIMIT 10";
+			$retrieve="SELECT * FROM event_guest WHERE (`event_id`='".$event_id['event_id']."' AND `status`= 'confirmed' ) ORDER BY `event_guest_id` DESC ";
 			$g=mysqli_query($connect,$retrieve) or die(mysqli_error($connect));
 			
 			$guests=mysqli_fetch_all($g,MYSQLI_ASSOC);
@@ -320,26 +359,7 @@
 		}
 
 
-		/*function retrieveData($connect){
-		$retrieve="SELECT * FROM event ORDER BY event_id DESC LIMIT 1";
 
-		$b= mysqli_query($connect,$retrieve) or die(mysqli_error($connect));
-		
-		
-		if (!$b){
-			die('invalid query');
-
-		}
-
-		while ($row= mysqli_fetch_assoc($b)) {
-			echo"{$row['name']}-".
-				"{$row['theme']}-".
-				"{$row['date']}-".
-				"{$row['venue']} <br><br>".
-				"<a href='db.php' target='_blank'>Complete DB</a>";
-		}
-		}
-*/
 
 
 		
@@ -350,7 +370,7 @@
 		$c= mysqli_query($connect, $retrieve) or die(mysqli_error($connect));
      
      		$row=mysqli_fetch_assoc($c);
-     		$row["register"]='registered';
+     		$row["register"]=NULL;
      		return json_encode($row);
 		}
 	
@@ -383,8 +403,57 @@
 
 		}
 
+		function insertGuestToken($connect,$guest,$token){
+			$event_id=getLatestEvent($connect);
+			
+			$insert="INSERT INTO `event_guest` (`event_id`, `guest_id`,`name`,`email`,`token`) VALUES ('".$event_id['event_id']."','".$guest['guest_id']."','".$guest['name']."','".$guest['email']."','$token');";
+
+			$a=mysqli_query($connect, $insert) or die(mysqli_error($connect));
+			
+
+		}
 
 
+		function generateToken($attr,$connect){
+
+			$guest_id= checkGuestTable($attr,$connect);
+
+			if($guest_id['email']===NULL){
+				$return['register']="register";
+				return $return;
+
+			}
+			$event_id= getLatestEvent($connect);
+			$query=checkRegisterLatestEvent($connect,$event_id,$guest_id);
+			if($query['email']===NULL){
+			//$guest_name=$guest_id['name'];
+			$guest_email=$guest_id['email'];
+			$host=$_SERVER['HTTP_HOST'];
+			$token=uniqid();
+		
+			insertGuestToken($connect,$guest_id,$token);
+	
+			$method="AES-256-CBC";
+			$iv="1234567812345678";
+			$pwd="rsvp";
+			//insert in DB
+			$token=openssl_encrypt($token,$method,$pwd,0,$iv);
+			$guest_email=openssl_encrypt($guest_email, $method,$pwd,0,$iv);
+			$token=rawurlencode($token);
+			$guest_email=rawurlencode($guest_email);
+
+			$url='<a target="_blank" href="http://'.$host.'/Internship RSVP/token.php?token=' . $token . '&email_id=' . $guest_email . '">Please click on this link</a>';
+			$return['url']=$url;
+			return $return;
+		}else{
+			$return["register"]="registered";
+			return $return;
+		}
+
+
+		}
+
+		
 
 
 ?>

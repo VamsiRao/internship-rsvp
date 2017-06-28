@@ -37,9 +37,24 @@
 				<button class="btn btn-primary pull-right" type="button" data-toggle="modal" data-target="#guestModal">Add Guest</button>
 			</h1>
 			<hr>
+
+
+
+
 				
 				<div class="col-xs-12 col-md-4 col-md-offset-1 ">
+				<?php 
+					$event=getLatestEvent($connect);
+					$guests=retrieveEventGuestDataTableConfirm($connect);
+
+
+					echo "<h4 style='text-align: center;'>Guests coming to ".$event['name']."  <span class='label label-success'>".sizeof($guests)."</span> </h4>"
+
+				?>
+				
+				<br>
 				<table class="table table-hover" id="guest_confirm_table" name="guest_table">
+					
  					<thead>
 				      <tr>
 				         <th>Name</th>
@@ -54,13 +69,14 @@
 				     
 				      	<?php		      					
 			      					
-				      				$guests= retrieveEventGuestDataTableConfirm($connect);				      			
+				      				$guests= retrieveEventGuestDataTableConfirm($connect);
+
 
 					      			foreach ($guests as $guest) {
 					      	
 					      	 				echo"<tr><td>{$guest['name']}</td>".
 					      	 					"<td>{$guest['email']}</td>".
-					      	 					"<td>{$guest['status']}</td></tr>";					      					
+					      	 					"<td><span class='label label-info'>{$guest['status']}</span></td></tr>";					      					
 					      				}
 				      						      		      		
 				      	?>
@@ -74,6 +90,17 @@
 
 
 					<div class="col-xs-12 col-md-5 col-md-offset-1 ">
+					
+					<?php 
+					
+					$guests=retrieveEventGuestDataTablePending($connect);
+
+
+					echo "<h4 style='text-align: center;'>Guests awaiting your reply  <span class='label label-danger'>".sizeof($guests)."</span> </h4>"
+
+					?>
+					<br>
+
 				<table class="table table-hover" id="guest_pending_table" name="guest_table">
  					<thead>
 				      <tr>
@@ -97,7 +124,7 @@
 					      	
 					      	 				echo"<tr><td>{$guest['name']}</td>".
 					      	 					"<td>{$guest['email']}</td>".
-					      	 					"<td>{$guest['status']}</td>".
+					      	 					"<td><span class='label label-warning'>{$guest['status']}</span></td>".
 					      	 					"<td><button type='button' class='btn btn-success btn-xs' value='{$guest['email']}' onclick='sendConfirmData(this);'>Confirm</button></td></tr>";
 
 

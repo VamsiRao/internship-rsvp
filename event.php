@@ -1,7 +1,7 @@
 <?php 
  
  include 'navbar.php';
- include 'guest.php'
+ include 'guest.php';
 
 ?>
 
@@ -24,7 +24,7 @@
 				<hr>
 			
 
-				<div class="col-xs-12 col-md-6 col-md-offset-3">
+				<div class="col-xs-12 col-md-12 ">
 				<table class="table table-hover" id="event_table" name="event_table">
  					<thead>
 				      <tr>
@@ -77,7 +77,7 @@
 			</div>
 			<div class="modal-body">
 			<div class="row">
-			
+				
 							<form  id="event_form" name="event_form" method="POST" data-toggle="validator">
 								<div class="form-group col-xs-12">
 									<label for="eventName" >Name</label>
