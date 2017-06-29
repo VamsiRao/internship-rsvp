@@ -30,13 +30,20 @@
 					if($_POST['action']=='confirmTable'){
 					$guests=retrieveEventGuestDataTableConfirm($connect);
 					echo json_encode($guests);
-					return;}
-					elseif ($_POST['action']=='pendingTable') {
+					return;
+				}
+					else if ($_POST['action']=='requestTable') {
+					
+					$guests=retrieveEventGuestDataTableRequest($connect);
+					echo json_encode($guests);
+					return;
+				}else if ($_POST['action']=='pendingTable') {
 					
 					$guests=retrieveEventGuestDataTablePending($connect);
 					echo json_encode($guests);
 					return;
 				}
+
 								
 					
 					
@@ -66,6 +73,7 @@
 				$attr['pref']=$_POST['inlineRadioOptions'];
 
 				echo insertDataRequest($attr,$connect);
+				//confirmTableTitle($connect);
 				return;
 				
 			}
@@ -121,8 +129,31 @@
 		
 			$insert ="INSERT INTO `event` (`name`, `theme`, `date`, `venue`) VALUES ('".$attr['eventName']."','".$attr['eventTheme']."','".$attr['date']."','".$attr['eventVenue']."');";
 
-		$a = mysqli_query($connect, $insert) or die(mysql_error());
+			$a = mysqli_query($connect, $insert) or die(mysql_error($connect));
+
+			inviteGuestsToNewEvent($connect);
+			return;
+
 		}
+
+		function inviteGuestsToNewEvent($connect){
+
+			$query="INSERT INTO `event_guest` ( `guest_id`, `name`, `email`) SELECT `guest_id`, `name`, `email`  FROM `guest`";
+			
+
+			$b= mysqli_query($connect, $query) or die(mysqli_error($connect));
+
+		
+
+			$event_id=getLatestEvent($connect);
+
+			$query = "UPDATE `event_guest` SET event_id='".$event_id['event_id']."', status='pending' WHERE status is null;";
+			$c= mysqli_query($connect, $query) or die(mysql_error());
+			return;
+			
+
+		}
+		//event id and status to updated
 
 
 
@@ -194,7 +225,7 @@
 									
 									//$insert_guest=mysqli_fetch_assoc($b);
 									
-									$a=addToEventGuest($connect,'0',$attr['name'],$event_id['event_id'],$attr['email'],'pending');
+									$a=addToEventGuest($connect,'0',$attr['name'],$event_id['event_id'],$attr['email'],'requested');
 									
 									
 									return retrieveJSON($connect);
@@ -316,12 +347,16 @@
 
 			$a = mysqli_query($connect, $insert) or die(mysql_error());
 
-			$retrieve="SELECT * FROM guest ORDER BY guest_id DESC LIMIT 1";
+			$event_id=getLatestEvent($connect);
 
-			$b= mysqli_query($connect,$retrieve) or die(mysqli_error($connect));
-			
-			$a =mysqli_fetch_assoc($b);
-			return $a;
+			$guest="SELECT * FROM guest ORDER BY guest_id DESC LIMIT 1";
+
+			$guest= mysqli_query($connect,$guest) or die(mysqli_error($connect));
+			$guest =mysqli_fetch_assoc($guest);
+
+			addToEventGuest($connect,$guest['guest_id'],$guest['name'],$event_id['event_id'],$guest['email'],'pending');			
+		
+			return $guest;
 		}
 		
 		else {
@@ -332,11 +367,11 @@
 
 
 
-		function retrieveEventGuestDataTablePending($connect){
+		function retrieveEventGuestDataTableRequest($connect){
 			
 			$event_id= getLatestEvent($connect);
 			
-			$retrieve="SELECT * FROM event_guest WHERE (`event_id`='".$event_id['event_id']."' AND `status`= 'pending' ) ORDER BY `event_guest_id` DESC ";
+			$retrieve="SELECT * FROM event_guest WHERE (`event_id`='".$event_id['event_id']."' AND `status`= 'requested' ) ORDER BY `event_guest_id` DESC ";
 			$g=mysqli_query($connect,$retrieve) or die(mysqli_error($connect));
 			
 			$guests=mysqli_fetch_all($g,MYSQLI_ASSOC);
@@ -346,11 +381,20 @@
 
 
 		function retrieveEventGuestDataTableConfirm($connect){
-			$event_id="SELECT event_id FROM event ORDER BY event_id DESC LIMIT 1";
-			$event_id=mysqli_query($connect, $event_id) or die(mysql_error());
-			$event_id= mysqli_fetch_assoc($event_id);
+			$event_id= getLatestEvent($connect);
 			
 			$retrieve="SELECT * FROM event_guest WHERE (`event_id`='".$event_id['event_id']."' AND `status`= 'confirmed' ) ORDER BY `event_guest_id` DESC ";
+			$g=mysqli_query($connect,$retrieve) or die(mysqli_error($connect));
+			
+			$guests=mysqli_fetch_all($g,MYSQLI_ASSOC);
+		
+			return ($guests);
+		}
+
+		function retrieveEventGuestDataTablePending($connect){
+			$event_id= getLatestEvent($connect);
+			
+			$retrieve="SELECT * FROM event_guest WHERE (`event_id`='".$event_id['event_id']."' AND `status`= 'pending' ) ORDER BY `event_guest_id` DESC ";
 			$g=mysqli_query($connect,$retrieve) or die(mysqli_error($connect));
 			
 			$guests=mysqli_fetch_all($g,MYSQLI_ASSOC);
@@ -393,6 +437,8 @@
 
 				$query = "UPDATE `event_guest` SET status='confirmed' WHERE (email = '$email' AND event_id='".$event_id['event_id']."')";
 				$c= mysqli_query($connect, $query) or die(mysqli_error($connect));
+
+				
      
 				
 				
@@ -406,14 +452,17 @@
 		function insertGuestToken($connect,$guest,$token){
 			$event_id=getLatestEvent($connect);
 			
-			$insert="INSERT INTO `event_guest` (`event_id`, `guest_id`,`name`,`email`,`token`) VALUES ('".$event_id['event_id']."','".$guest['guest_id']."','".$guest['name']."','".$guest['email']."','$token');";
+			$query = "UPDATE `event_guest` SET `token`='$token' WHERE (email = '".$guest['email']."' AND event_id='".$event_id['event_id']."')";
+			
 
-			$a=mysqli_query($connect, $insert) or die(mysqli_error($connect));
+			$a=mysqli_query($connect, $query) or die(mysqli_error($connect));
+			return;
+
 			
 
 		}
 
-
+		//done
 		function generateToken($attr,$connect){
 
 			$guest_id= checkGuestTable($attr,$connect);
@@ -425,7 +474,7 @@
 			}
 			$event_id= getLatestEvent($connect);
 			$query=checkRegisterLatestEvent($connect,$event_id,$guest_id);
-			if($query['email']===NULL){
+			if($query['status']==="pending" ){
 			//$guest_name=$guest_id['name'];
 			$guest_email=$guest_id['email'];
 			$host=$_SERVER['HTTP_HOST'];

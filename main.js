@@ -183,7 +183,7 @@
 													}
 								else{
 
-										if(e.status==="pending"){
+										if(e.status==="requested"){
 											alert("Thank you for showing interest in our event. Your request has been submitted! :)");
 
 										} else{
@@ -236,7 +236,7 @@
 
 						else{
 
-								if(e.status==="pending"){
+								if(e.status==="requested"){
 									alert("Thank you for showing interest in our event. Your request has been submitted! :)");
 
 								} else{
@@ -275,22 +275,11 @@
 						}
 						else{
 							alert("Guest "+e.name+" is entered")
+							ajaxGuestConfirmTable();
+							ajaxGuestPendingTable();
 
 						}
-							/*$('#guest_table').prepend([
-										'<tr>',
-										    '<td>'+e.name+'</td>',
-										    '<td>'+e.email+'</td>',
-										    
-										    
-										'</tr>'
-										].join(''));
-						}
-						}
-		*/
-
-					
-					
+							
 				}
 				
 
@@ -317,6 +306,7 @@
 
 					ajaxGuestConfirmTable();
 					ajaxGuestPendingTable();
+					ajaxGuestRequestTable();
 					alert("Confirmed");
 					
 								
@@ -327,6 +317,7 @@
 			});
 
 		}
+
 		function ajaxGuestConfirmTable(){
   			
   			  			
@@ -342,6 +333,7 @@
 					 var guests=e;
 					//console.log(guests.length);
 					constructGuestConfirmTable(guests);
+					$('#guestsComingLabel').html(guests.length);
 								
 					
 				}
@@ -350,6 +342,7 @@
 			});
 
 		}
+
 		function ajaxGuestPendingTable(){
   			
   			  			
@@ -365,6 +358,34 @@
 					 var guests=e;
 					//console.log(guests.length);
 					constructGuestPendingTable(guests);
+								
+					
+				}
+				
+
+			});
+
+		}
+
+
+
+
+		function ajaxGuestRequestTable(){
+  			
+  			  			
+
+  			
+			$.ajax({
+
+				url:'guest.php',
+				data: { 'action':'requestTable' },
+				dataType:'JSON',
+				type:'POST',
+				success: function (e){
+					 var guests=e;
+					//console.log(guests.length);
+					constructGuestRequestTable(guests);
+					$('#guestsRequestedLabel').html(guests.length);
 								
 					
 				}
@@ -391,14 +412,38 @@
 
 		}
 		
-		$('#guest_confirm_table tbody').html(html);
+		$('#guest_invite_table tbody').html(html);
+			
+
+
+		}
+
+			function constructGuestPendingTable(guests){
+			var html='';
+			var length= guests.length;
+			for(var i=0; i<length;i++){
+				var guest=guests[i];
+				
+				var row_html='<tr>';
+				row_html+='<td>'+guest['name']+ '</td>';
+				row_html+='<td>'+guest['email']+ '</td>';
+				row_html+="<td><span class='label label-default'>"+guest['status']+ "</span></td>";
+				row_html+='</tr>';
+
+				html+=row_html;
+
+		}
+		
+		$('#guest_invite_table tbody').append(html);
 			
 
 
 		}
 
 
-	function constructGuestPendingTable(guests){
+
+
+	function constructGuestRequestTable(guests){
 			var html='';
 			var length= guests.length;
 			for(var i=0; i<length;i++){
@@ -417,7 +462,7 @@
 
 		}
 		
-		$('#guest_pending_table tbody').html(html);
+		$('#guest_request_table tbody').html(html);
 			
 
 

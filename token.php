@@ -52,6 +52,7 @@
 								$guest=checkRegisterLatestEvent($connect,$event_id,$attr);
 								
 								
+								
 								if($token===$guest['token']){
 
 									echo "<br> <br> <p> <b> Hi ".$guest['name'] ."!  Thank you for joining us. Looking forward to seeing you in the party!</b> </p>";
